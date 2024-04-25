@@ -1,0 +1,135 @@
+---
+title: "Fading Away: The Global Decline of Open Defecation"
+subtitle: "How and why open defecation has declined in recent years ?"
+author: "Alban CARON"
+date: 2024-04-25
+format: 
+  html:
+    toc: true
+    theme: materia
+execute: 
+  echo: false
+  warning: false
+  message: false
+---
+<div style="text-align:center">
+# ***What is Open Defecation ?***
+</div>
+**Open defecation** is the practice of defecating in fields, forests, bushes, bodies of water, or other open spaces rather than into toilets or latrines. It is a **major public health concern**, as it leads to the spread of diseases such as diarrhea, cholera, and typhoid. These diseases can be particularly deadly for young children, who are more susceptible to infection.
+
+In addition to the health risks, open defecation also has a significant **impact on the environment**. Human waste can contaminate water sources and pollute the soil, leading to environmental degradation. Open defecation can also have a negative **impact on social and economic development**. It can limit access to education and employment, as people who practice open defecation may be ashamed or embarrassed to use public facilities.
+
+There are a number of factors that contribute to open defecation, including:
+
+<br>- **Poverty**: People living in poverty often lack the resources to build or maintain toilets.
+<br>-**Lack of access to water**: Toilets require water to function properly, and many people in developing countries do not have access to a safe and reliable water supply.
+<br>-**Cultural norms**: In some cultures, open defecation is seen as a normal and acceptable practice.
+<br>-**Lack of awareness of the risks**: Many people are not aware of the health and environmental risks associated with open defecation
+
+```{r}
+#| label: setup
+#| include: false
+
+# libraries
+library(tidyverse)
+library(gapminder)
+library(ggplot2)
+library(maps)
+
+# data
+
+unicef_indicator_1V2 <- read_csv2("unicef_indicator_1V2.csv")
+
+unicef_metadataV2 <- read_csv2("unicef_metadataV2.csv")
+
+
+# transformations
+
+data_join <- full_join(unicef_metadataV2, unicef_indicator_1V2, by = c("year" = "time_period", "country" = "country"))
+
+data_join <- unicef_metadataV2 %>%
+  full_join(unicef_indicator_1V2, by = c("country", "year" = "time_period")) |> 
+  mutate(obs_value = as.numeric(obs_value))
+
+world_map <- map_data("world")
+
+map_data_join <- full_join(data_join, world_map, by = c("country" = "region"))
+
+map_data_join_2021 <- map_data_join %>%
+  filter(year == 2021)
+```
+<div style="text-align:center">
+## ***Proportion of People Defecating by Country: A Global Comparison***
+</div>
+```{r}
+#| fig-cap: "Thanks to this map showing the proportion of open defecation in the world in 2021, we can get a clear idea of the situation to date. We can see that open defecation mainly affects sub-Saharan Africa. Niger, Chad and southern Sudan are the worst affected countries. At the same time, we can see that stable and highly developed countries are not recording any cases of open defecation."
+
+ggplot(map_data_join_2021, aes(x = long, y = lat, group = group, fill = obs_value)) +
+  geom_polygon(color = "black") +
+  scale_fill_gradient(low = "orange", high = "brown", na.value = "grey", name = "Open Defecation Proportion") +
+  labs(title = "Proportion of Open Defecation by Country in 2021") +
+  theme_minimal()
+```
+
+<div style="text-align:center">
+## ***Evolution of the Open Defecation, Life Expectation and the GDP over the years***
+</div>
+
+<div style="text-align:center">
+### ***Proportion of People Practicing Open Defecation Over Time***
+</div>
+```{r}
+#| fig-cap: "This first Bar chart clearly shows the evolution of the proportion of open defecation over the years in the world. We can see a significant reduction in the proportion of open defecation, from an average of 12.7 in 2000 to an average of around 5.2 in 2022."
+
+ggplot(unicef_indicator_1V2, aes(x = time_period, y = obs_value, fill = "orange")) +
+  geom_bar(stat = "identity") +
+  labs(title = "Proportion of People Practicing Open Defecation Over Time",
+       x = "Years",
+       y = "Open defecation proportion",
+       fill = "") +
+  theme_minimal()
+```
+
+<div style="text-align:center">
+### ***Life Expectancy over the years***
+</div>
+```{r}
+#| fig-cap: "Thanks to this table, which shows the evolution of the worldwide life expectancy over the years, we can see that there has been a clear increase since the 1960s. By comparing the above bar chart we can therefore deduce a potential correlation between the decrease in the proportion of open defecation and the increase in life expectancy."
+
+ggplot(unicef_metadataV2, aes(x = year, y = `Life expectancy at birth, total (years)`, fill = `Life expectancy at birth, total (years)`)) +
+  geom_bar(stat = "identity")+
+  labs(title = "Evolution of the Life Expectancy Over Time",
+       x = "Years",
+       y = "Value",
+       fill = "Life Expectancy") +
+  theme_minimal()
+```
+
+<div style="text-align:center">
+### ***GDP over the years***
+</div>
+```{r}
+#| fig-cap: "Then, this graph shows the evolution of global GDP over the years. Here too we can see a clear increase since the 60s. And taking into account the 2 previous graphs, we can also think of a probable correlation between the decrease in the proportion of open defecation and the increase in life expectancy and gdp."
+
+ggplot(unicef_metadataV2, aes(x = year, y = `GDP per capita (constant 2015 US$)`, fill = `GDP per capita (constant 2015 US$)`)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Evolution of the GDP Over Time",
+       x = "Years",
+       y = "Value",
+       fill = "GDP") + 
+  theme_minimal()
+```
+
+## Conclusion of the analysis
+The significant reduction in the proportion of open defecation over time, observed across the years from 2000 to 2022, is encouraging and suggests progress in tackling this public health problem. At the same time, the increase in global life expectancy since the 1960s may be associated with this positive trend, highlighting the potential impact of reducing open defecation on the overall health of populations. In addition, the continued growth in global GDP over the years indicates economic development that could be linked to improved living and health conditions. These observations highlight the importance of ongoing efforts to eliminate open defecation and promote healthier living conditions worldwide.
+
+There are several possible solutions to further reduce this health issue: 
+<br>- **Improving access to sanitation facilities**:invest in the construction and maintenance of toilets and latrines accessible to all, particularly in disadvantaged and rural areas.
+<br>- **Awareness-raising and education**: promote awareness of the health risks associated with open defecation and educate people about the importance of using toilets to prevent disease.
+<br>- **Poverty Reduction and Economic Development**: tackling the root causes of poverty by providing economic opportunities and resources to disadvantaged communities, enabling them to build adequate sanitation facilities.
+<br>- **Technological Innovation**: exploring innovative technological solutions such as ecological toilets and autonomous sanitation systems for areas where traditional infrastructure is difficult to implement.
+<br>- **Strengthening public policy**: put in place effective policies and regulations to eliminate open defecation and ensure high sanitation standards for all.
+
+Thanks to ongoing efforts and the implementation of effective social and health policies, it may one day be possible to eliminate this health issue. 
+
+
